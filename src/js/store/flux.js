@@ -1,42 +1,96 @@
+
+const baseUrl = "https://playground.4geeks.com/contact"
+
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			contacts: [
+			],
 		},
 		actions: {
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
-			},
-			loadSomeData: () => {
-				/**
-					fetch().then().then(data => setStore({ "foo": data.bar }))
-				*/
-			},
-			changeColor: (index, color) => {
-				//get the store
-				const store = getStore();
+			getContactList: async () => {
+				try {
+					const response = await fetch(baseUrl + "/agendas/santiago")
+					if (!response.ok) {
+						console.error(response.statusText)
+						return false
+					}
+					const dataApiContacts = await response.json()
+					setStore({ contacts: dataApiContacts.contacts })
+					return true
+				} catch (error) {
+					console.error("Error", error)
+					return false
+				}
 
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
+			},
 
-				//reset the global store
-				setStore({ demo: demo });
+			createNewContact: async (newUserObj) => {
+				const store = getStore()
+				try {
+					const response = await fetch(baseUrl + "/agendas/santiago/contacts", {
+						method: 'POST',
+						body: JSON.stringify(newUserObj),
+						headers: { "Content-Type": "application/json" }
+					})
+					if (!response.ok) {
+						console.error(response.statusText)
+						return false
+					}
+					const dataNewUser = await response.json()
+					console.log(dataNewUser)
+					setStore({ contacts: store.contacts.concat(dataNewUser) })
+					return true
+				} catch (error) {
+					console.error("Error", error)
+					return false
+				}
+
+			},
+
+			updateContact: async (id, data) => {
+				try {
+					const response = await fetch(baseUrl + "/agendas/santiago/contacts/" + id, {
+						method: 'PUT',
+						body: JSON.stringify(data),
+						headers: { "Content-Type": "application/json" }
+					})
+					if (!response.ok) {
+						console.error(response.statusText)
+						return false
+					}
+					const dataApiUpdateContacts = await response.json()
+
+					const newList = [...getStore().contacts]
+					const index = newList.findIndex(item => item.id == id)
+					newList[index] = dataApiUpdateContacts
+					setStore({ contacts: newList })
+					return true
+				} catch (error) {
+					console.error("Error", error)
+					return false
+				}
+			},
+
+			deleteContact: async (id) => {
+				try {
+					const response = await fetch(baseUrl + "/agendas/santiago/contacts/" + id, {
+						method: 'DELETE'
+					})
+					if (!response.ok) {
+						const errorData = await response.json()
+						console.error("Error:", response.statusText, errorData)
+						return false
+					}
+					//const data = await response.json()
+					const deletedItemsList = [...getStore().contacts.splice(id, 1)]
+					setStore({ contacts: deletedItemsList })
+					return true
+
+				} catch (error) {
+					console.error("Error", error)
+					return false
+				}
 			}
 		}
 	};
