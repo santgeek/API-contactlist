@@ -23,12 +23,13 @@ const injectContext = PassedComponent => {
 
 		useEffect(() => {
 
-			state.actions.getContactList().then(success => {
+			state.actions.createContactList()
+
+			/*state.actions.getContactList().then(success => {
 				if (!success) {
 					console.log("No se pudieron cargar los contactos")
 				}
-			})
-
+			})*/
 
 			/**
 			 * EDIT THIS!

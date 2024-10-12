@@ -8,6 +8,28 @@ const getState = ({ getStore, getActions, setStore }) => {
 			],
 		},
 		actions: {
+
+			createContactList: async () => {
+				const response = await fetch(baseUrl + "/agendas/santiago")
+				try {
+					if (!response.ok) {
+						const addAgenda = await fetch(baseUrl + "/agendas/santiago", {
+							method: 'POST',
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ slug: "santiago" })
+						})
+						const data = await addAgenda.json()
+						console.log(data)
+						setStore({ contacts: data.contacts })
+
+					}
+				} catch (error) {
+					console.error("Error", error)
+					return false
+				}
+
+			},
+
 			getContactList: async () => {
 				try {
 					const response = await fetch(baseUrl + "/agendas/santiago")
@@ -83,8 +105,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 						return false
 					}
 					//const data = await response.json()
-					const deletedItemsList = [...getStore().contacts.splice(id, 1)]
-					setStore({ contacts: deletedItemsList })
+					const updatedList = getStore().contacts.filter(contact => contact.id !== id)
+					setStore({ contacts: updatedList })
 					return true
 
 				} catch (error) {
